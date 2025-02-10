@@ -7,15 +7,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type UserRepository struct {
 	baseUrl string
+	token   string
 }
 
-func NewUserRepository(baseUrl string) UserRepository {
+func NewUserRepository(baseUrl, token string) UserRepository {
 	return UserRepository{
 		baseUrl: baseUrl,
+		token:   token,
 	}
 }
 
@@ -55,4 +58,53 @@ func (userRepository UserRepository) AcquireUserId(ticketId string) (userId stri
 	}
 
 	return output.UserId, nil
+}
+
+type UserResponse struct {
+	Id       string `json:"id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Verified bool   `json:"verified"`
+	AvatarId uint8  `json:"avatarId"`
+}
+
+func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse, error) {
+	var users = make([]UserResponse, 0, len(userIds))
+
+	if len(userIds) == 0 {
+		return users, nil
+	}
+
+	query := "ids[]=" + strings.Join(userIds, "&ids[]=")
+
+	url := fmt.Sprintf("%s/users?%s", userRepository.baseUrl, query)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return users, fmt.Errorf("could not create new reques: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Api-Token", userRepository.token)
+
+	response, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return users, fmt.Errorf("could not send request: %w", err)
+	}
+
+	if response.StatusCode != 200 {
+		return users, fmt.Errorf("response status %d is not ok: %w", response.StatusCode, err)
+	}
+
+	err = json.NewDecoder(response.Body).Decode(&users)
+
+	_ = response.Body.Close()
+
+	if err != nil {
+		return users, fmt.Errorf("could not decode response body: %w", err)
+	}
+
+	return users, nil
 }
