@@ -60,14 +60,6 @@ func (userRepository UserRepository) AcquireUserId(ticketId string) (userId stri
 	return output.UserId, nil
 }
 
-type UserResponse struct {
-	Id       string `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Verified bool   `json:"verified"`
-	AvatarId uint8  `json:"avatarId"`
-}
-
 func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse, error) {
 	var users = make([]UserResponse, 0, len(userIds))
 
@@ -107,4 +99,24 @@ func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse,
 	}
 
 	return users, nil
+}
+
+func (userRepository UserRepository) findById(userId string) (*UserResponse, error) {
+	users, err := userRepository.GetByIds([]string{userId})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return nil, UserNotFound
+	}
+
+	user := users[0]
+
+	if !user.Verified {
+		return nil, UserNotVerified
+	}
+
+	return &user, nil
 }
