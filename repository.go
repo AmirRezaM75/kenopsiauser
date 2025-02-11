@@ -101,7 +101,7 @@ func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse,
 	return users, nil
 }
 
-func (userRepository UserRepository) findById(userId string) (*UserResponse, error) {
+func (userRepository UserRepository) FindById(userId string) (*UserResponse, error) {
 	users, err := userRepository.GetByIds([]string{userId})
 
 	if err != nil {
