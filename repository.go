@@ -101,22 +101,22 @@ func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse,
 	return users, nil
 }
 
-func (userRepository UserRepository) FindById(userId string) (*UserResponse, error) {
+func (userRepository UserRepository) FindById(userId string) (UserResponse, error) {
 	users, err := userRepository.GetByIds([]string{userId})
 
 	if err != nil {
-		return nil, err
+		return UserResponse{}, err
 	}
 
 	if len(users) == 0 {
-		return nil, UserNotFound
+		return UserResponse{}, UserNotFound
 	}
 
 	user := users[0]
 
 	if !user.Verified {
-		return nil, UserNotVerified
+		return UserResponse{}, UserNotVerified
 	}
 
-	return &user, nil
+	return user, nil
 }
