@@ -60,8 +60,8 @@ func (userRepository UserRepository) AcquireUserId(ticketId string) (userId stri
 	return output.UserId, nil
 }
 
-func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse, error) {
-	var users = make([]UserResponse, 0, len(userIds))
+func (userRepository UserRepository) GetByIds(userIds []string) ([]User, error) {
+	var users = make([]User, 0, len(userIds))
 
 	if len(userIds) == 0 {
 		return users, nil
@@ -101,21 +101,21 @@ func (userRepository UserRepository) GetByIds(userIds []string) ([]UserResponse,
 	return users, nil
 }
 
-func (userRepository UserRepository) FindById(userId string) (UserResponse, error) {
+func (userRepository UserRepository) FindById(userId string) (User, error) {
 	users, err := userRepository.GetByIds([]string{userId})
 
 	if err != nil {
-		return UserResponse{}, err
+		return User{}, err
 	}
 
 	if len(users) == 0 {
-		return UserResponse{}, UserNotFound
+		return User{}, UserNotFound
 	}
 
 	user := users[0]
 
 	if !user.Verified {
-		return UserResponse{}, UserNotVerified
+		return User{}, UserNotVerified
 	}
 
 	return user, nil

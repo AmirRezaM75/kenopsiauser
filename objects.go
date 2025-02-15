@@ -1,6 +1,6 @@
 package kenopsiauser
 
-type UserResponse struct {
+type User struct {
 	Id       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
